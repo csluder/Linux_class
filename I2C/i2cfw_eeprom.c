@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * at24c256_i2c_edu.c — Unified Teaching Driver for AT24C256 I2C EEPROM
+ * i2cfw_eeprom.c — I2C framework driver for AT24C256 I2C EEPROM
  * Optimized for Raspberry Pi 4/5 (Kernels 5.x to 6.12+)
  */
 
@@ -24,7 +24,7 @@
 #define AT24_DEFAULT_PAGE 64
 #define AT24_WRITE_TIMEOUT_MS 5
 
-struct at24_edu {
+struct at24_data {
     struct i2c_client *client;
     struct miscdevice miscdev;
     struct bin_attribute bin_attr;
@@ -88,7 +88,7 @@ static int at24_wait_ready(struct i2c_client *client)
 
 static ssize_t at24_read_file(struct file *f, char __user *ubuf, size_t count, loff_t *ppos)
 {
-    struct at24_edu *ee = container_of(f->private_data, struct at24_edu, miscdev);
+    struct at24_data *ee = container_of(f->private_data, struct at24_data, miscdev);
     loff_t pos = *ppos;
     size_t todo;
     ssize_t done = 0;
@@ -118,7 +118,7 @@ static ssize_t at24_read_file(struct file *f, char __user *ubuf, size_t count, l
 
 static ssize_t at24_write_file(struct file *f, const char __user *ubuf, size_t count, loff_t *ppos)
 {
-    struct at24_edu *ee = container_of(f->private_data, struct at24_edu, miscdev);
+    struct at24_data *ee = container_of(f->private_data, struct at24_data, miscdev);
     loff_t pos = *ppos;
     size_t remaining;
     ssize_t written = 0;
@@ -165,7 +165,7 @@ static ssize_t at24_sysfs_read(struct file *filp, struct kobject *kobj,
 {
     struct device *dev = kobj_to_dev(kobj);
     struct i2c_client *client = to_i2c_client(dev);
-    struct at24_edu *ee = i2c_get_clientdata(client);
+    struct at24_data *ee = i2c_get_clientdata(client);
     int ret;
 
     if (off >= ee->size) return 0;
@@ -191,7 +191,7 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
 #endif
 {
     struct device *dev = &client->dev;
-    struct at24_edu *ee;
+    struct at24_data *ee;
     int ret;
 
     ee = devm_kzalloc(dev, sizeof(*ee), GFP_KERNEL);
@@ -245,7 +245,7 @@ static void at24_remove(struct i2c_client *client)
 static int at24_remove(struct i2c_client *client)
 #endif
 {
-    struct at24_edu *ee = i2c_get_clientdata(client);
+    struct at24_data *ee = i2c_get_clientdata(client);
     misc_deregister(&ee->miscdev);
     device_remove_bin_file(&client->dev, &ee->bin_attr);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
@@ -264,7 +264,7 @@ MODULE_DEVICE_TABLE(of, at24_of_match);
 
 static struct i2c_driver at24_driver = {
     .driver = {
-        .name = "at24c256_edu",
+        .name = "at24c256",
         .of_match_table = at24_of_match,
     },
     .probe = at24_probe,
@@ -273,7 +273,7 @@ static struct i2c_driver at24_driver = {
 
 module_i2c_driver(at24_driver);
 
-MODULE_AUTHOR("Educational Example");
-MODULE_DESCRIPTION("Unified RPi 4/5 I2C EEPROM Driver");
+MODULE_AUTHOR("csluder");
+MODULE_DESCRIPTION("RPi 4/5 I2C EEPROM Driver");
 MODULE_LICENSE("GPL v2");
 

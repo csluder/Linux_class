@@ -1,7 +1,7 @@
 #!/bin/bash
 # EEPROM Driver Test Suite v2
 
-DRIVER_NAME="at24c256_edu"
+DRIVER_NAME="at24c256"
 TEST_DATA="ABCD"
 
 echo "--- EEPROM DRIVER TEST SUITE ---"

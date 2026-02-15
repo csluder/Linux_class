@@ -69,7 +69,7 @@ static int l3_napi_poll(struct napi_struct *napi, int budget)
 		work_done++;
 	}
 
-	/* 2. Process TX Completions (Cleaning the original buffers) */
+	/* Process TX Completions (Cleaning the original buffers) */
 	while (priv->dirty_tx != priv->cur_tx) {
 		entry = priv->dirty_tx % NUM_DESC;
 		if (priv->tx_ring[entry].status != L3_OWN_CPU)
@@ -184,20 +184,20 @@ static void l3_setup(struct net_device *dev)
 static struct net_device *my_dev;
 
 static int __init l3_init(void) {
-	/* 1. Allocation & Setup (Setup calls netif_napi_add_weight) */
+	/* Allocation & Setup (Setup calls netif_napi_add_weight) */
 	my_dev = alloc_netdev(sizeof(struct l3_napi_adapter), "l3loop%d", NET_NAME_UNKNOWN, l3_setup);
 	if (!my_dev) 
 		return -ENOMEM;
 
 	eth_hw_addr_random(my_dev);
 
-	/* 2. Registration (Device becomes active here) */
+	/*  Registration (Device becomes active here) */
 	if (register_netdev(my_dev)) {
 		free_netdev(my_dev);
 		return -EIO;
 	}
 
-	pr_info("L3 NAPI Unified Simulator Loaded (Loopback Active)\n");
+	pr_info("L3 NAPI NIC Simulator Loaded (Loopback Active)\n");
 	return 0;
 }
 
@@ -212,5 +212,5 @@ module_init(l3_init);
 module_exit(l3_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("Unified Loopback NAPI Driver for Presentation");
+MODULE_DESCRIPTION("NAPI example driver");
 

@@ -122,7 +122,7 @@ static int adxl345_probe(struct spi_device *spi)
 		return ret;
 	}
 
-	dev_info(&spi->dev, "Unified ADXL345 Driver Probed successfully\n");
+	dev_info(&spi->dev, "ADXL345 Driver Probed successfully\n");
 	return 0;
 }
 
@@ -140,5 +140,5 @@ static struct spi_driver adxl345_driver = {
 module_spi_driver(adxl345_driver);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Presentation Project");
+MODULE_AUTHOR("csluder");
 
