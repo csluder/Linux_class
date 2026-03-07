@@ -314,9 +314,10 @@ static int l3_napi_poll(struct napi_struct* napi, int budget)
 	int work_done = 0;
 	int xdp_redirects = 0;
 	u32 entry;
-	ktime_t ts_poll_start = ktime_get();
+	
 
 #if TIMING_DEBUG
+	ktime_t ts_poll_start = ktime_get();
 	{
 		s64 delta_ns = ktime_to_ns(ktime_sub(ts_poll_start, priv->ts_last_napi));
 		if (delta_ns > 1000000) {  /* > 1ms */
@@ -343,9 +344,10 @@ static int l3_napi_poll(struct napi_struct* napi, int budget)
 		struct page* page = priv->rx_ring[entry].page;
 		u32 data_len = priv->rx_ring[entry].data_len;
 		u32 data_offset = priv->rx_ring[entry].data_offset;
-		ktime_t ts_queued = priv->rx_ring[entry].timestamp;
+		
 
 #if TIMING_DEBUG
+		ktime_t ts_queued = priv->rx_ring[entry].timestamp;
 		{
 			s64 delta_ns = ktime_to_ns(ktime_sub(ts_poll_start, ts_queued));
 			if (delta_ns > 1000000) {  /* > 1ms */
@@ -644,9 +646,10 @@ static void l3_doorbell_work(struct work_struct* work)
 	void* data;
 	u32 entry;
 	unsigned long flags;
-	ktime_t ts_work_start = ktime_get();
+	
 
 #if TIMING_DEBUG
+	ktime_t ts_work_start = ktime_get();
 	{
 		s64 delta_ns = ktime_to_ns(ktime_sub(ts_work_start, item->ts_queued));
 		if (delta_ns > 1000000) {  /* > 1ms */
@@ -757,9 +760,10 @@ static void l3_loopback_work(struct work_struct* work)
 	void* data;
 	u32 entry;
 	unsigned long flags;
-	ktime_t ts_work_start = ktime_get();
+	
 
 #if TIMING_DEBUG
+	ktime_t ts_work_start = ktime_get();
 	{
 		s64 delta_ns = ktime_to_ns(ktime_sub(ts_work_start, item->ts_queued));
 		if (delta_ns > 1000000) {  /* > 1ms */
