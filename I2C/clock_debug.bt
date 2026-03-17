@@ -1,0 +1,37 @@
+#!/usr/bin/bpftrace
+
+/*
+ * I2C Clock Latency Debugger
+ * Target: HT16K33 at 0x70
+ */
+
+#include <linux/i2c.h>
+
+    kprobe:i2c_transfer_buffer_flags
+{
+    $client = (struct i2c_client*)arg0;
+
+/* Filter for our specific hardware address */
+if ($client->addr == 0x70) {
+    @start[tid] = nsecs;
+    printf("[%p] I2C Write Started (Addr: 0x%x, Len: %d)\n",
+           tid, $client->addr, arg2);
+}
+}
+
+kretprobe:i2c_transfer_buffer_flags
+/ @start[tid] /
+{
+    $lat = nsecs - @start[tid];
+    printf("[%p] I2C Write Finished. Latency: %d ns\n", tid, $lat);
+
+    /* Store in a histogram for the class to see jitter */
+    @latency_stats = hist($lat);
+
+    delete(@start[tid]);
+}
+
+END
+{
+    printf("\nTracing finished. Closing maps...\n");
+}

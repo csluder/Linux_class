@@ -1,0 +1,12 @@
+#!/usr/bin/bpftrace
+
+/* Attach to the offset 0xe4 inside the clock driver's work handler */
+kprobe : i2c_clock:ht16k33_work_handler + 0x148
+{
+    $count = reg("regs[2]");
+    $client = reg("regs[0]");
+
+    /* arg0, arg1, arg2 correspond to x0, x1, x2 at this instruction */
+    printf("Hit I2C call at offset 0x114!\n");
+    printf("Sending %d bytes to I2C client %p\n", $count, $client);
+}
