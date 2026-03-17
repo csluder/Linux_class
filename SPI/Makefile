@@ -1,6 +1,7 @@
 # Object file to be created (must match your .c filename)
 
 obj-m += adxl345_tap.o
+obj-m += adxl345_xyz.o
 
 
 # The KDIR variable should point to your Yocto-built kernel source or SDK headers
