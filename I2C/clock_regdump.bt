@@ -1,0 +1,71 @@
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+    printf("=== Demonstrating pt_regs Usage ===\n");
+}
+
+/* Probe at offset 0xf4 - RIGHT BEFORE the bl instruction */
+kprobe:ht16k33_work_handler + 0xf4
+{
+    $x0 = reg("regs[0]");
+    $x1 = reg("regs[1]");
+    $x2 = reg("regs[2]");
+    $x3 = reg("regs[3]");
+
+    printf("━━━ At ht16k33_work_handler+0xf4 (before bl) ━━━\n");
+    printf("Reading pt_regs (SAVED STATE at trap):\n");
+    printf("  x0 (client): 0x%016lx\n", $x0);
+    printf("  x1 (buffer): 0x%016lx\n", $x1);
+    printf("  x2 (???):    0x%016lx\n", $x2);
+    printf("  x2 & 0xFFFFFFFF: %u (0x%x) \n",
+        $x2 & 0xFFFFFFFF, $x2 & 0xFFFFFFFF);
+    printf("  x3 (???):    0x%016lx\n", $x3);
+    printf("\n");
+    printf("\n");
+}
+
+/* Probe at the ACTUAL function being called */
+kprobe:i2c_transfer_buffer_flags
+{
+    $client = arg0;
+    $buf = arg1;
+    $count = arg2 & 0xFFFFFFFF;
+    $flags = arg3;
+
+    printf("━━━ At i2c_transfer_buffer_flags (function entry) ━━━\n");
+    printf("Reading ACTUAL function arguments (from pt_regs at function entry):\n");
+    printf("  arg0 (client): 0x%016lx\n", $client);
+    printf("  arg1 (buffer): 0x%016lx\n", $buf);
+    printf("  arg2 (count):  0x%016lx\n", arg2);
+    printf("  arg2 & 0xFFFFFFFF: %u (0x%x)\n", $count, $count);
+    printf("  arg3 (flags):  0x%016lx\n", $flags);
+    printf("\n");
+
+    /* Print buffer contents */
+    if ($count > 0 && $count <= 32) {
+        printf("Buffer contents (%u bytes):\n  ", $count);
+        $j = 0;
+        unroll(32) {
+            if ($j < $count) {
+                printf("%02x ", *(uint8*)($buf + $j));
+            }
+            $j++;
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+kretprobe:i2c_transfer_buffer_flags
+{
+    printf("━━━ i2c_transfer_buffer_flags returned: %d ━━━\n", retval);
+    printf("════════════════════════════════════════════════════\n\n");
+}
+
+END
+{
+    /* Usually print something like a graph or summary statistics saved in a map */
+    printf("\n=== Summary ===\n");
+    printf("• pt_regs at arbitrary offsets shows SAVED register state\n");
+}

@@ -3,7 +3,7 @@
 #include <linux/ktime.h>
 #include <linux/percpu.h>
 
-#define TARGET_OFFSET 0xe4 // Ensure this matches your objdump offset
+#define TARGET_OFFSET 0xf4 // Ensure this matches your objdump offset
 
 /* Per-CPU variable to store start time in nanoseconds */
 static DEFINE_PER_CPU(ktime_t, start_time);
@@ -14,6 +14,9 @@ static struct kprobe kp = {
 };
 
 static int handler_pre(struct kprobe* p, struct pt_regs* regs) {
+  
+    pr_info("[DEBUG] xxOffset 0x%x REG[0] = 0x%llx REG[2] = %llx\n",
+        TARGET_OFFSET, reg[0], reg[2]);
     /* Get the most precise monotonic time available */
     __this_cpu_write(start_time, ktime_get());
     return 0;
